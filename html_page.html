@@ -1,134 +1,189 @@
-<!DOCTYPE html>
-<html>
-  <head>
+<head>
     <style>
         .slidecontainer {
-          width: 100%;
-        }
-        
+                width: 100%;
+            }
+
         .slider {
-          -webkit-appearance: none;
-          width: 100%;
-          height: 25px;
-          background: #d3d3d3;
-          outline: none;
-          opacity: 0.7;
-          -webkit-transition: .2s;
-          transition: opacity .2s;
-        }
-        
+                -webkit-appearance: none;
+                width: 50%;
+                height: 10px;
+                background: #d3d3d3;
+                outline: none;
+                opacity: 0.7;
+                -webkit-transition: .2s;
+                transition: opacity .2s;
+            }
+
         .slider:hover {
-          opacity: 1;
-        }
-        
+                opacity: 1;
+            }
+
         .slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 25px;
-          height: 25px;
-          background: #04AA6D;
-          cursor: pointer;
-        }
-        
+                -webkit-appearance: none;
+                appearance: none;
+                width: 25px;
+                height: 25px;
+                background: #04AA6D;
+                cursor: pointer;
+            }
+
         .slider::-moz-range-thumb {
-          width: 25px;
-          height: 25px;
-          background: #04AA6D;
-          cursor: pointer;
-        }
+                width: 25px;
+                height: 25px;
+                background: #04AA6D;
+                cursor: pointer;
+            }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
     <script>
-      var ajaxRequest = new XMLHttpRequest();
+        var ajaxRequest = new XMLHttpRequest();
 
-      function ajaxLoad(ajaxURL) {
-        ajaxRequest.open("GET", ajaxURL, true);
-        ajaxRequest.onreadystatechange = function () {
-          if (ajaxRequest.readyState == 4 && ajaxRequest.status == 200) {
-            var ajaxResult = ajaxRequest.responseText;
-            var array = ajaxResult.split("|");
-            document.getElementById("AcX").innerHTML = array[0];
-            document.getElementById("AcY").innerHTML = array[1];
-          }
-        };
-        ajaxRequest.send();
-      }
+        function ajaxLoad(ajaxURL) {
+                ajaxRequest.open("GET", ajaxURL, true);
+                ajaxRequest.onreadystatechange = function () {
+                        if (ajaxRequest.readyState == 4 && ajaxRequest.status == 200) {
+                                var ajaxResult = ajaxRequest.responseText;
+                                var array = ajaxResult.split("|");
+                                document.getElementById("AcX_data").innerHTML = array[0];
+                                document.getElementById("AcY_data").innerHTML = array[1];
+                                document.getElementById("AcZ_data").innerHTML = array[2];
+                                document.getElementById("GyX_data").innerHTML = array[3];
+                                document.getElementById("GyY_data").innerHTML = array[4];
+                                document.getElementById("GyZ_data").innerHTML = array[5];
+                            }
+                    };
+                ajaxRequest.send();
+            }
 
-      function updateDHT() {
-        ajaxLoad("getDHT");
-      }
+        function updateDHT() {
+                ajaxLoad("getDHT");
+            }
 
-      setInterval(updateDHT, 1000);
+        setInterval(updateDHT, 1000);
 
     </script>
 
     <title>SenseU</title>
-  </head>
+</head>
 
-  <body>
+<body>
     <center>
-      <div id="main">
-        <h1>SenseU</h1>
-        <h4>Web server on ESP32</h4>
-        <div id="content">
-            <form id="Adjust_form">
-          <p>
-            Horizontal Movement: <strong><span id="AcX">--.-</span></strong>
-          </p>
-          <div class="slidecontainer">
-            <input type="range" name="AcX_slider" min="1" max="1000" value='""" + str(AcX) + """' class="slider" id="AcX">
-            <p>Value: <span id="AcX_value"></span></p>
-            </p>
-          </div>
+        <div id="main">
+            <h1>SenseU</h1>
+            <h4>Web server on ESP32</h4>
+            <div id="content">
+                <form id="Adjust_form">
+                    <div class="card" style="width: 30rem; padding: 10px">
 
-          <p>
-            Vertical Movement: <strong><span id="AcY">--.-</span></strong>
-          </p>
-          <div class="slidecontainer">
-            <input type="range" name="AcY_slider" min="1" max="1000" value='""" + str(AcY) + """' class="slider" id="AcY">
-            <p>Value: <span id="AcY_value"></span></p>
-            </p>
-          </div>
+                    <p>
+                        Horizontal Movement: <strong><span id="AcX_data">--.-</span></strong>
+                    </p>
+                    <div class="slidecontainer">
+                        <input type="range" name="AcX_slider" min="1" max="1000" value="{AcX}" class="slider" id="AcX">
+                        <p>Value: <span id="AcX_value"></span></p>
+                        </p>
+                    </div>
 
-          <p>
-            Side-to-Side Movement: <strong><span id="AcZ">--.-</span></strong>
-          </p>
-          <div class="slidecontainer">
-            <input type="range" name="AcZ_slider" min="1" max="1000" value='""" + str(AcZ) + """' class="slider" id="AcZ">
-            <p>Value: <span id="AcZ_value"></span></p>
-            </p>
-          </div>
+                    <p>
+                        Vertical Movement: <strong><span id="AcY_data">--.-</span></strong>
+                    </p>
+                    <div class="slidecontainer">
+                        <input type="range" name="AcY_slider" min="1" max="1000" value="{AcY}" class="slider" id="AcY">
+                        <p>Value: <span id="AcY_value"></span></p>
+                        </p>
+                    </div>
 
-          <p>
-            Horizontal Position: <strong><span id="GyX">--.-</span></strong>
-          </p>
-          <p>
-            Vertical Position: <strong><span id="GyY">--.-</span></strong>
-          </p>
-          <p>
-            Side-to-Side Position: <strong><span id="GyZ">--.-</span></strong>
-          </p>
-        </div>
+                    <p>
+                        Side-to-Side Movement: <strong><span id="AcZ_data">--.-</span></strong>
+                    </p>
+                    <div class="slidecontainer">
+                        <input type="range" name="AcZ_slider" min="1" max="1000" value="{AcZ}" class="slider" id="AcZ">
+                        <p>Value: <span id="AcZ_value"></span></p>
+                        </p>
+                    </div>
 
-        <script>
-        
-            document.getElementById("AcX_value").innerHTML = document.getElementById("AcX").value;
-            document.getElementById("AcX").oninput = function() {
-                document.getElementById("AcX_value").innerHTML = this.value;
-            }
-            document.getElementById("AcX").onmouseup = function() {
-              document.getElementById("Adjust_form").submit();
-            }
+                    <p>
+                        Horizontal Position: <strong><span id="GyX_data">--.-</span></strong>
+                    </p>
+                    <div class="slidecontainer">
+                        <input type="range" name="GyX_slider" min="1" max="1000" value="{GyX}" class="slider" id="GyX">
+                        <p>Value: <span id="GyX_value"></span></p>
+                        </p>
+                    </div>
 
-            document.getElementById("AcY_value").innerHTML = document.getElementById("AcY").value;
-            document.getElementById("AcY").oninput = function() {
-                document.getElementById("AcY_value").innerHTML = this.value;
-            }
-            document.getElementById("AcY").onmouseup = function() {
-              document.getElementById("Adjust_form").submit();
-            }
+                    <p>GyZ
+                        Vertical Position: <strong><span id="GyY_data">--.-</span></strong>
+                    </p>
+                    <div class="slidecontainer">
+                        <input type="range" name="GyY_slider" min="1" max="1000" value="{GyY}" class="slider" id="GyY">
+                        <p>Value: <span id="GyY_value"></span></p>
+                        </p>
+                    </div>
+
+                    <p>
+                        Side-to-Side Position: <strong><span id="GyZ_data">--.-</span></strong>
+                    </p>
+                    <div class="slidecontainer">
+                        <input type="range" name="GyZ_slider" min="1" max="1000" value="{GyZ}" class="slider" id="GyZ">
+                        <p>Value: <span id="GyZ_value"></span></p>
+                        </p>
+                    </div>
+                </form>
+            </div>
+
+            <script>
+
+                document.getElementById("AcX_value").innerHTML = document.getElementById("AcX").value;
+                document.getElementById("AcX").oninput = function () {
+                        document.getElementById("AcX_value").innerHTML = this.value;
+                    }
+                document.getElementById("AcX").onmouseup = function () {
+                        document.getElementById("Adjust_form").submit();
+                    }
+
+                document.getElementById("AcY_value").innerHTML = document.getElementById("AcY").value;
+                document.getElementById("AcY").oninput = function () {
+                        document.getElementById("AcY_value").innerHTML = this.value;
+                    }
+                document.getElementById("AcY").onmouseup = function () {
+                        document.getElementById("Adjust_form").submit();
+                    }
+
+                document.getElementById("AcZ_value").innerHTML = document.getElementById("AcZ").value;
+                document.getElementById("AcZ").oninput = function () {
+                        document.getElementById("AcZ_value").innerHTML = this.value;
+                    }
+                document.getElementById("AcZ").onmouseup = function () {
+                        document.getElementById("Adjust_form").submit();
+                    }
+
+                document.getElementById("GyX_value").innerHTML = document.getElementById("GyX").value;
+                document.getElementById("GyX").oninput = function () {
+                        document.getElementById("GyX_value").innerHTML = this.value;
+                    }
+                document.getElementById("GyX").onmouseup = function () {
+                        document.getElementById("Adjust_form").submit();
+                    }
+
+                document.getElementById("GyY_value").innerHTML = document.getElementById("GyY").value;
+                document.getElementById("GyY").oninput = function () {
+                        document.getElementById("GyY_value").innerHTML = this.value;
+                    }
+                document.getElementById("GyY").onmouseup = function () {
+                        document.getElementById("Adjust_form").submit();
+                    }
+
+                document.getElementById("GyZ_value").innerHTML = document.getElementById("GyZ").value;
+                document.getElementById("GyZ").oninput = function () {
+                        document.getElementById("GyZ_value").innerHTML = this.value;
+                    }
+                document.getElementById("GyZ").onmouseup = function () {
+                        document.getElementById("Adjust_form").submit();
+                    }
             </script>
-      </div>
+        </div>
     </center>
-  </body>
-</html>
+</body>

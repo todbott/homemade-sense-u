@@ -113,7 +113,7 @@ while True:
     # Socket send()
     request = str(request)
     update = request.find('/getDHT')
-    adjust = request.find("/?Hthresh_slider=")
+    adjust = request.find("/?AcX_slider=")
     if update == 6:
         mpuv = mpu.get_values()
         
@@ -139,7 +139,7 @@ while True:
                 replies[k] = "none"
         
     
-        response = replies['AcX'] + "|"+ replies['AcY']
+        response = "|".join([r for r in replies.values()])
         
         for k in readings.keys():
             if len(readings[k]) > 10:
@@ -147,11 +147,16 @@ while True:
         
     
     elif adjust == 6:
-        v = request.split("Hthresh_slider=")[1].split(" HTTP")[0]
-        thresholds['AcX'] = int(v)
-        response = web_page(v, thresholds['AcY'], thresholds['AcZ'])
+        allSliders = request.split("/?")[1].split(" ")[0]
+        print(allSliders)
+        # AcX_slider=426&AcY_slider=501&AcZ_slider=501
+        for slider in allSliders.split("&"):
+            sliderName = slider.split("_slider=")[0]
+            sliderValue = slider.split("_slider=")[1]
+            thresholds[sliderName] = int(sliderValue)
+        response = web_page(**thresholds)
     else:
-        response = web_page(thresholds['AcX'], thresholds['AcY'], thresholds['AcZ'])
+        response = web_page(**thresholds)
         
     
     # Create a socket reply
