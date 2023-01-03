@@ -38,33 +38,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
-    <script>
-        var ajaxRequest = new XMLHttpRequest();
 
-        function ajaxLoad(ajaxURL) {
-                ajaxRequest.open("GET", ajaxURL, true);
-                ajaxRequest.onreadystatechange = function () {
-                        if (ajaxRequest.readyState == 4 && ajaxRequest.status == 200) {
-                                var ajaxResult = ajaxRequest.responseText;
-                                var array = ajaxResult.split("|");
-                                document.getElementById("AcX_data").innerHTML = array[0];
-                                document.getElementById("AcY_data").innerHTML = array[1];
-                                document.getElementById("AcZ_data").innerHTML = array[2];
-                                document.getElementById("GyX_data").innerHTML = array[3];
-                                document.getElementById("GyY_data").innerHTML = array[4];
-                                document.getElementById("GyZ_data").innerHTML = array[5];
-                            }
-                    };
-                ajaxRequest.send();
-            }
-
-        function updateDHT() {
-                ajaxLoad("getDHT");
-            }
-
-        setInterval(updateDHT, 1000);
-
-    </script>
 
     <title>SenseU</title>
 </head>
@@ -75,6 +49,17 @@
             <h1>SenseU</h1>
             <h4>Web server on ESP32</h4>
             <div id="content">
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                      <h5 class="card-title">Calibrate sensors</h5>
+                      <h6 class="card-subtitle mb-2 text-muted" id="calibrationTimer">Timer: 180 seconds</h6>
+                      <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                      <button type="button" class="btn btn-primary" id='checkCalibrationButton' onclick='startCalibrating()'>Check Calibration</button>
+                    </div>
+                  </div>
+                    
+
+               
                 <form id="Adjust_form">
                     <div class="card" style="width: 30rem; padding: 10px">
 
@@ -135,6 +120,57 @@
             </div>
 
             <script>
+
+                var updateInterval = 0
+                var updateAndCalibrateInterval = 0
+
+                var ajaxRequest = new XMLHttpRequest();
+
+                function ajaxLoad(ajaxURL, calibrating) {
+                        ajaxRequest.open("GET", ajaxURL, true);
+                        ajaxRequest.onreadystatechange = function () {
+                                if (ajaxRequest.readyState == 4 && ajaxRequest.status == 200) {
+                                        var ajaxResult = ajaxRequest.responseText;
+                                        var array = ajaxResult.split("|");
+                                        document.getElementById("AcX_data").innerHTML = array[0];
+                                        document.getElementById("AcY_data").innerHTML = array[1];
+                                        document.getElementById("AcZ_data").innerHTML = array[2];
+                                        document.getElementById("GyX_data").innerHTML = array[3];
+                                        document.getElementById("GyY_data").innerHTML = array[4];
+                                        document.getElementById("GyZ_data").innerHTML = array[5];
+
+                                        if ((array.includes("movement")) && (calibrating==true)) {
+                                            clearInterval(updateAndCalibrateInterval)
+                                            updateInterval = setInterval("updateDHT('getDHT', false)", 1000); 
+                                        }
+                                    }
+                            };
+                        ajaxRequest.send();
+                        if (calibrating == true) {
+                            var currTimer = document.getElementById("calibrationTimer")
+                            var currSecond = parseInt(currTimer.innerHTML.split("Timer: ")[1].replace(" seconds", ""))
+                            currSecond -= 1
+                            currTimer.innerHTML = "Timer: " + currSecond.toString() + " seconds"
+                            if (currSecond == 0) {
+                                clearInterval(updateAndCalibrateInterval)
+                                updateInterval = setInterval("updateDHT('getDHT', false)", 1000);
+                            }
+                        }
+                    }
+
+                function updateDHT(url, calibrating) {
+                        ajaxLoad(url, calibrating);
+                    }
+
+                updateInterval = setInterval("updateDHT('getDHT', false)", 1000);        
+
+                function startCalibrating() {
+                        clearInterval(updateInterval)
+                        updateAndCalibrateInterval = setInterval("updateDHT('getDHT', true)", 1000); 
+                    }
+                
+
+
 
                 document.getElementById("AcX_value").innerHTML = document.getElementById("AcX").value;
                 document.getElementById("AcX").oninput = function () {

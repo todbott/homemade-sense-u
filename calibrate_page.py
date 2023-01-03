@@ -1,6 +1,6 @@
-def web_page(AcX, AcY, AcZ, GyX, GyY, GyZ):
+def page(AcX, AcY, AcZ, GyX, GyY, GyZ):
 
-    p = open("html_page.html", "r").read()
+    p = open("calibrate.html", "r").read()
     doubled = p.replace(" {", "{{").replace(" }", "}}")
 
     page = """<!DOCTYPE html>

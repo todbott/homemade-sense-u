@@ -7,7 +7,7 @@ import network
 import time
 import mpu6050
 import math
-from html_page import web_page
+import calibrate_page
 import urequests_two as urequests
 
 #initializing the I2C method for ESP32
@@ -154,9 +154,9 @@ while True:
             sliderName = slider.split("_slider=")[0]
             sliderValue = slider.split("_slider=")[1]
             thresholds[sliderName] = int(sliderValue)
-        response = web_page(**thresholds)
+        response = calibrate_page.page(**thresholds)
     else:
-        response = web_page(**thresholds)
+        response = calibrate_page.page(**thresholds)
         
     
     # Create a socket reply
