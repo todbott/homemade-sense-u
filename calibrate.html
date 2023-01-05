@@ -60,7 +60,7 @@
             <div class="card" style="width: 75%;" id="calibrateCard">
                 <div class="card-body">
                 <h5 class="card-title">Calibrate sensors</h5>
-                <h6 class="card-subtitle mb-2 text-muted" id="calibrationTimer">Timer: 1 seconds</h6>
+                <h6 class="card-subtitle mb-2 text-muted" id="calibrationTimer">Timer: 60 seconds</h6>
                 <p class="card-text" id="calibrateCardText">Adjust the sensor sensitivity, then check the calibration.  Once calibration check is complete, you can begin using the monitoring function.</p>
                 <button type="button" class="btn btn-primary" id='checkCalibrationButton' onclick='startCalibrating()'>Check Calibration</button>
                 <button type="button" class="btn btn-primary" id='startMonitoringButton' onclick='startMonitoring()'>Start Monitoring</button>
@@ -287,7 +287,7 @@
                                                 updateInterval = setInterval("updateDHT('getDHT', false)", 1000);
                                                 document.getElementById("calibrateCardText").innerHTML = "Calibration check has been stopped.  One of the sensors is still too sensitive, and detecing false movement.  Please adjust the sensor sensitivity and try again."
                                                 document.getElementById("calibrateCardText").style.color = "#ff2828"
-                                                document.getElementById("calibrationTimer").innerHTML = "Timer: 1 seconds"
+                                                document.getElementById("calibrationTimer").innerHTML = "Timer: 60 seconds"
                                             }
                                         } else {
                                             console.log("problem!")
