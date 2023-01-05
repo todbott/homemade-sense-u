@@ -4,6 +4,7 @@ from machine import Pin
 from machine import sleep
 from machine import PWM
 import network
+import micropython
 import time
 import mpu6050
 import math
@@ -23,6 +24,8 @@ button = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
 sta = network.WLAN(network.STA_IF)
 sta.active(True)
 sta.connect("IODATA-cdbc80-2G", "8186896622346")
+
+print(micropython.mem_info())
 
 while sta.isconnected() == False:
     time.sleep(2)
@@ -80,14 +83,14 @@ readings = {
 
 thresholds = {
 
-    'GyX': 0,
-    'GyY': 0,
-    'GyZ': 0,
+    'GyX': 200,
+    'GyY': 200,
+    'GyZ': 200,
 
-    'AcX': 0,
-    'AcY': 0,
-    'AcZ': 0
-
+    'AcX': 200,
+    'AcY': 200,
+    'AcZ': 200,
+    'monitoring': "false"
 }
 
 replies = {
@@ -98,23 +101,28 @@ replies = {
 
     'AcX': "",
     'AcY': "",
-    'AcZ': ""
+    'AcZ': "",
+    'no_movement_seconds': '0',
+    'warning': ''
 }
+
+no_movement_seconds = 0
 
 while True:
     conn, addr = s.accept()
     #print("Got connection from %s" % str(addr))
     
     # Socket receive()
-    request=conn.recv(1024)
+    request=conn.recv(1600) #1024)
     print("")
     print("Content %s" % str(request))
     
     # Socket send()
     request = str(request)
     update = request.find('/getDHT')
-    adjust = request.find("/?AcX_slider=")
-    if update == 6:
+    adjust = request.find("AcX_slider=")
+
+    if update > -1:
         mpuv = mpu.get_values()
         
         thisGyX = mpuv['GyX']
@@ -134,27 +142,52 @@ while True:
             thisAverage = averageList(readings[k])
             
             if math.fabs(readings[k][-1]-thisAverage) > thresholds[k]:
-                replies[k] = "movement"
+                replies[k] = "#00ff22" # green
             else:
-                replies[k] = "none"
-        
+                replies[k] = "#ff2828" # red
+
+        if thresholds['monitoring'] == "true":
+            if "#00ff22" not in replies.values():
+                no_movement_seconds += 1
+            else:
+                no_movement_seconds = 0
+
+            if no_movement_seconds > 40:
+                replies['warning'] = "No movement detected for more than 40 seconds"
+                polytone.duty(999)  
+                monotone.value(1)     
+            elif no_movement_seconds > 20:
+                replies['warning'] = "No movement detected for more than 20 seconds"
+                polytone.duty(999)
+            else:
+                replies['warning'] = ''
+                polytone.duty(0)
+                monotone.value(0)
+
+            replies['no_movement_seconds'] = str(no_movement_seconds)
     
         response = "|".join([r for r in replies.values()])
         
         for k in readings.keys():
-            if len(readings[k]) > 10:
-                readings[k] = []
+            if len(readings[k]) > 5:
+                readings[k].clear()
         
-    
-    elif adjust == 6:
-        allSliders = request.split("/?")[1].split(" ")[0]
-        print(allSliders)
+    elif adjust > -1:
+
+        for k in readings.keys():
+            readings[k].clear()
+
+        allSliders = request.split("/?")[1].split(" ")[0][1:]
+      
         # AcX_slider=426&AcY_slider=501&AcZ_slider=501
-        for slider in allSliders.split("&"):
+        for slider in allSliders.split("&")[1:]:
             sliderName = slider.split("_slider=")[0]
             sliderValue = slider.split("_slider=")[1]
             thresholds[sliderName] = int(sliderValue)
+        if "monitoring" in allSliders:
+            thresholds['monitoring'] = "true"
         response = calibrate_page.page(**thresholds)
+
     else:
         response = calibrate_page.page(**thresholds)
         
@@ -169,4 +202,6 @@ while True:
     conn.close()
     
     if button.value():
+        polytone.duty(0)
+        monotone.value(0)
         break

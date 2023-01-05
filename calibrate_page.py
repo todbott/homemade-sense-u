@@ -1,4 +1,4 @@
-def page(AcX, AcY, AcZ, GyX, GyY, GyZ):
+def page(AcX, AcY, AcZ, GyX, GyY, GyZ, monitoring):
 
     p = open("calibrate.html", "r").read()
     doubled = p.replace(" {", "{{").replace(" }", "}}")
@@ -9,7 +9,8 @@ def page(AcX, AcY, AcZ, GyX, GyY, GyZ):
                     AcZ = str(AcZ),
                     GyX = str(GyX),
                     GyY = str(GyY),
-                    GyZ = str(GyZ)) + """
+                    GyZ = str(GyZ),
+                    monitoring = monitoring) + """
                 </html>
             """
     return page
