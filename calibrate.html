@@ -239,6 +239,9 @@
                         </div>
                     </div>
                 </div>
+
+
+                  
          
 
             <script>
@@ -290,7 +293,7 @@
                                                 document.getElementById("calibrateCardText").innerHTML = "Calibration check has been stopped.  One of the sensors is still too sensitive, and detecing false movement.  Please adjust the sensor sensitivity and try again."
                                                 document.getElementById("calibrateCardText").style.color = "#ff2828"
                                                 document.getElementById("calibrationTimer").innerHTML = "Timer: 60 seconds"
-                                                //document.getElementById("Adjust_form").submit();
+                                                $("#adjusting").show().css("visibility", "visible")
                                             }
                                         } else {
                                             console.log("problem!")
@@ -342,6 +345,9 @@
                 function startCalibrating() {
                         clearInterval(updateInterval)
                         updateAndCalibrateInterval = setInterval("updateDHT('getDHT', true)", 1000); 
+                        $("#adjusting").show().css("visibility", "hidden")
+                        document.getElementById("checkCalibrationButton").disabled = true
+                        document.getElementById("calibrateCardText").innerHTML = "Checking for false movement.   Please don't touch the sensor."
                     }
                 
                 function startMonitoring() {
