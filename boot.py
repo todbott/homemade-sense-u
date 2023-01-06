@@ -124,20 +124,12 @@ while True:
 
     if update > -1:
         mpuv = mpu.get_values()
-        
-        thisGyX = mpuv['GyX']
-        thisGyY = mpuv['GyY']
-        thisGyZ = mpuv['GyZ']
-        
-        thisAcX = mpuv['AcX']
-        thisAcY = mpuv['AcY']
-        thisAcZ = mpuv['AcZ']
-        
+                
         for k in readings.keys():
-            
+            if len(readings[k]) > 5:
+                readings[k].clear()
             readings[k].append(mpuv[k])
 
-        
         for k in readings.keys():
             thisAverage = averageList(readings[k])
             
@@ -168,14 +160,7 @@ while True:
     
         response = "|".join([r for r in replies.values()])
         
-        for k in readings.keys():
-            if len(readings[k]) > 5:
-                readings[k].clear()
-        
     elif adjust > -1:
-
-        for k in readings.keys():
-            readings[k].clear()
 
         allSliders = request.split("/?")[1].split(" ")[0][1:]
       
