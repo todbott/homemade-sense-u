@@ -124,6 +124,8 @@ while True:
 
     if update > -1:
         mpuv = mpu.get_values()
+
+        print(mpuv)
                 
         for k in readings.keys():
             if len(readings[k]) > 5:

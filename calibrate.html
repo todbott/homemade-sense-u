@@ -265,19 +265,20 @@
                                     
                                             var ajaxResult = ajaxRequest.responseText;
                                             var array = ajaxResult.split("|");
-                                            document.getElementById("AcX_data").style.backgroundColor = array[0];
-                                            document.getElementById("AcY_data").style.backgroundColor = array[1];
-                                            document.getElementById("AcZ_data").style.backgroundColor = array[2];
+                                            console.log(array)
+                                            document.getElementById("AcX_data").style.backgroundColor = array[7];
+                                            document.getElementById("AcY_data").style.backgroundColor = array[6];
+                                            document.getElementById("AcZ_data").style.backgroundColor = array[5];
                                             document.getElementById("GyX_data").style.backgroundColor = array[3];
-                                            document.getElementById("GyY_data").style.backgroundColor = array[4];
-                                            document.getElementById("GyZ_data").style.backgroundColor = array[5];
+                                            document.getElementById("GyY_data").style.backgroundColor = array[2];
+                                            document.getElementById("GyZ_data").style.backgroundColor = array[1];
 
-                                            document.getElementById("AcX_data_monitoring").style.backgroundColor = array[0];
-                                            document.getElementById("AcY_data_monitoring").style.backgroundColor = array[1];
-                                            document.getElementById("AcZ_data_monitoring").style.backgroundColor = array[2];
+                                            document.getElementById("AcX_data_monitoring").style.backgroundColor = array[7];
+                                            document.getElementById("AcY_data_monitoring").style.backgroundColor = array[6];
+                                            document.getElementById("AcZ_data_monitoring").style.backgroundColor = array[5];
                                             document.getElementById("GyX_data_monitoring").style.backgroundColor = array[3];
-                                            document.getElementById("GyY_data_monitoring").style.backgroundColor = array[4];
-                                            document.getElementById("GyZ_data_monitoring").style.backgroundColor = array[5];
+                                            document.getElementById("GyY_data_monitoring").style.backgroundColor = array[2];
+                                            document.getElementById("GyZ_data_monitoring").style.backgroundColor = array[1];
 
                                             document.getElementById("noMovementSpan").innerHTML = array[4]
                                             document.getElementById("warningSpan").innerHTML = array[0]
