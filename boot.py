@@ -19,17 +19,19 @@ mpu= mpu6050.accel(i2c)
 monotone = Pin(32, Pin.OUT)
 polytone = PWM(Pin(33), freq=500, duty=0)
 
+
+red = PWM(Pin(16), freq=5000, duty=500)
+yellow = PWM(Pin(18), freq=5000, duty=0)
+green = PWM(Pin(19), freq=5000, duty=0)
+
 button = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
 
 sta = network.WLAN(network.STA_IF)
 sta.active(True)
 sta.connect("IODATA-cdbc80-2G", "8186896622346")
 
-print(micropython.mem_info())
-
 while sta.isconnected() == False:
     time.sleep(2)
-    print("waiting")
     
 print(sta.ifconfig())
 
@@ -81,16 +83,26 @@ readings = {
     'AcZ': []
 }
 
+finalReadings = {
+    
+    'GyX': [],
+    'GyY': [],
+    'GyZ': [],
+
+    'AcX': [],
+    'AcY': [],
+    'AcZ': []
+}
+
 thresholds = {
 
-    'GyX': 200,
-    'GyY': 200,
-    'GyZ': 200,
+    'GyX': 10,
+    'GyY': 10,
+    'GyZ': 10,
 
-    'AcX': 200,
-    'AcY': 200,
-    'AcZ': 200,
-    'monitoring': "false"
+    'AcX': 10,
+    'AcY': 10,
+    'AcZ': 10
 }
 
 replies = {
@@ -108,39 +120,106 @@ replies = {
 
 no_movement_seconds = 0
 
-while True:
-    conn, addr = s.accept()
-    #print("Got connection from %s" % str(addr))
-    
-    # Socket receive()
-    request=conn.recv(1600) #1024)
-    print("")
-    print("Content %s" % str(request))
-    
-    # Socket send()
-    request = str(request)
-    update = request.find('/getDHT')
-    adjust = request.find("AcX_slider=")
+calculated = False
+while not calculated:
 
-    if update > -1:
-        mpuv = mpu.get_values()
+    lists_remain = False
 
-        print(mpuv)
-                
-        for k in readings.keys():
+    mpuv = mpu.get_values()
+    yellow.duty(50)
+    print("Calculating the error rates of each sensor")
+            
+    for k in readings.keys():
+        if isinstance(finalReadings[k], list):
+            lists_remain = True
             if len(readings[k]) > 5:
+                finalReadings[k].append(averageList(readings[k]))
                 readings[k].clear()
+                if len(finalReadings[k]) > 5:
+                    finalReadings[k] = averageList(finalReadings[k])
             readings[k].append(mpuv[k])
 
-        for k in readings.keys():
-            thisAverage = averageList(readings[k])
-            
-            if math.fabs(readings[k][-1]-thisAverage) > thresholds[k]:
-                replies[k] = "#00ff22" # green
-            else:
-                replies[k] = "#ff2828" # red
+    time.sleep(0.5)
+    yellow.duty(0)
+    time.sleep(0.5)
 
-        if thresholds['monitoring'] == "true":
+    if not lists_remain:
+        calculated = True
+
+
+seconds_without_error = 0
+adjustment = False
+calibrated = False
+while not calibrated:
+
+    mpuv = mpu.get_values()
+
+    for k in readings.keys():
+
+        yellow.duty(500)
+        readings[k] = mpuv[k]
+        
+        if math.fabs(readings[k]-finalReadings[k]) > thresholds[k]:
+            thresholds[k] += math.fabs(readings[k]-finalReadings[k])
+            adjustment = True
+
+    if adjustment:
+        adjustment = False
+        seconds_without_error = 0
+    else:
+        seconds_without_error += 1
+        print(f'{seconds_without_error} seconds with no error')
+    if seconds_without_error > 60:
+        calibrated = True
+    yellow.duty(0)
+    time.sleep(1)
+    
+for k in readings.keys():
+    readings[k] = []
+    thresholds[k] += 100
+
+yellow.duty(0)
+red.duty(0)
+for duty_cycle in range(0, 500):
+    green.duty(duty_cycle)
+    time.sleep(0.005)
+
+ok = True
+while ok == True:
+    try:
+        conn, addr = s.accept()
+        #print("Got connection from %s" % str(addr))
+        
+        # Socket receive()
+        request=conn.recv(1024)
+        print("")
+        print("Content %s" % str(request))
+        
+        # Socket send()
+        request = str(request)
+        update = request.find('/getDHT')
+
+        if update > -1:
+
+            mpuv = mpu.get_values()
+                            
+            for k in readings.keys():
+
+                readings[k].append(mpuv[k])
+
+                
+                print(f'{k} {thresholds[k]}')
+                
+                if len(readings[k]) == 2:
+                    print(f'{k} {math.fabs(readings[k][1]-readings[k][0])}')
+        
+                    if math.fabs(readings[k][1]-readings[k][0]) > thresholds[k]:
+                        replies[k] = "#00ff22" # green
+                    else:
+                        replies[k] = "#ff2828" # red
+                    readings[k].clear()
+
+
             if "#00ff22" not in replies.values():
                 no_movement_seconds += 1
             else:
@@ -159,36 +238,52 @@ while True:
                 monotone.value(0)
 
             replies['no_movement_seconds'] = str(no_movement_seconds)
-    
-        response = "|".join([r for r in replies.values()])
-        
-    elif adjust > -1:
 
-        allSliders = request.split("/?")[1].split(" ")[0][1:]
-      
-        # AcX_slider=426&AcY_slider=501&AcZ_slider=501
-        for slider in allSliders.split("&")[1:]:
-            sliderName = slider.split("_slider=")[0]
-            sliderValue = slider.split("_slider=")[1]
-            thresholds[sliderName] = int(sliderValue)
-        if "monitoring" in allSliders:
-            thresholds['monitoring'] = "true"
-        response = calibrate_page.page(**thresholds)
-
-    else:
-        response = calibrate_page.page(**thresholds)
+            response = "|".join([r for r in replies.values()])
+            
+        else:
+            response = calibrate_page.page()
+            
         
-    
-    # Create a socket reply
-    conn.send('HTTP/1.1 200 OK\n')
-    conn.send('Content-Type: text/html\n')
-    conn.send('Connection: close\n\n')
-    conn.sendall(response)
-    
-    # Socket close()
-    conn.close()
-    
-    if button.value():
-        polytone.duty(0)
-        monotone.value(0)
+        # Create a socket reply
+        conn.send('HTTP/1.1 200 OK\n')
+        conn.send('Content-Type: text/html\n')
+        conn.send('Connection: close\n\n')
+        conn.sendall(response)
+        
+        # Socket close()
+        conn.close()
+        
+        if button.value():
+            polytone.duty(0)
+            monotone.value(0)
+            green.duty(0)
+            break
+    except:
+        ok = False
         break
+
+if ok == False:
+    print("a problem occured, triggering a warning now")
+    green.duty(0)
+    red.duty(500)
+    while True:
+        polytone.duty(999)
+        red.duty(500)
+        time.sleep(2)
+        polytone.duty(0)
+        red.duty(0)
+
+        if button.value():
+            polytone.duty(0)
+            break
+
+polytone.duty(0)
+monotone.value(0)
+green.duty(0)
+red.duty(0)
+yellow.duty(0)
+
+
+
+
