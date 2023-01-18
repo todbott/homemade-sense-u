@@ -103,11 +103,10 @@
                         ajaxRequest.onload = function() {
                             ajaxRequest.onreadystatechange = function () {
                                     if (ajaxRequest.readyState == 4) {
-                                        if (ajaxRequest.status == 200) {
+                                        if (ajaxRequest.status == 200) { 
                                     
                                             var ajaxResult = ajaxRequest.responseText;
                                             var array = ajaxResult.split("|");
-                                            console.log(array)
 
                                             document.getElementById("AcX_data_monitoring").style.backgroundColor = array[7];
                                             document.getElementById("AcY_data_monitoring").style.backgroundColor = array[6];
@@ -118,14 +117,19 @@
 
                                             document.getElementById("noMovementSpan").innerHTML = array[4]
                                             document.getElementById("warningSpan").innerHTML = array[0]
-                                            if (array[0].includes("40")) {
+                                            if (array[0].includes("Warning:")) {
+                                                playSound("https://storage.googleapis.com/rvm-images/first_alert.wav")
+                                            }
+                                            else if (array[0].includes("Alert:")) {
                                                 document.getElementById("warningSpan").style.fontWeight = "900"
+                                                playSound("https://storage.googleapis.com/rvm-images/second_alert.wav")
+                                            } else if (array[0].includes("Sensor")) {
+                                                document.getElementById("warningSpan").style.fontWeight = "900"
+                                                playSound("https://storage.googleapis.com/rvm-images/sensor_disconnected.wav")
                                             } else {
                                                 document.getElementById("warningSpan").style.fontWeight = "400"
                                             }
-                                        } else {
-                                            console.log("problem!")
-                                        }
+                                        } 
                                     } 
                                 };
                             };
@@ -142,7 +146,14 @@
                         ajaxLoad(url);
                     }
 
-                updateInterval = setInterval("updateDHT('getDHT')", 1000);        
+                function playSound(url) {
+                    const audio = new Audio(url);
+                    audio.play();
+                    }
+                    
+
+                updateInterval = setInterval("updateDHT('getDHT')", 3000);        
+
             </script>
         </div>
     </center>
