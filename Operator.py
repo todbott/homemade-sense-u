@@ -248,6 +248,7 @@ class SensorController:
             with open("calibration_values.txt", "r") as v:
                 self.thresholds = ujson.load(v)
 
+        # Start looping, sending sensor updates to the site
         while True:
             
             conn, addr = self.s.accept()
@@ -259,9 +260,15 @@ class SensorController:
             request = str(request)
             update = request.find('/getDHT')
 
+            # If this is the first rendering of the page, /getDHT will not be in the request, so it will be -1 here.
+            # If this, on the other hand, is a request triggered by Ajax (which happens every 3 seconds),
+            # upate the sensor readings
             if update > -1:
 
                 movement_this_time = False
+                
+                # The page updates every 3 seconds, but I want to check for movement even more frequently than that
+                # So here, we check for movement 2 times within those 3 seconds we have
                 for t in range(0, 2):
                     mpuv = self.mpu.get_values()
                                     
@@ -269,6 +276,7 @@ class SensorController:
 
                         self.readings[k].append(mpuv[k])
                         
+                        # If there are 2 readings, compare the difference in thos readings against the threshold value for that sensor
                         if len(self.readings[k]) == 2:
                 
                             if math.fabs(self.readings[k][1]-self.readings[k][0]) > self.thresholds[k]:
@@ -279,14 +287,17 @@ class SensorController:
                             self.readings[k].clear()
                     time.sleep(1)
 
-                response = self.__checkForMovementAndMakeReplies(self, movement_this_time)
+                # Make a | delimited response to send to the frontend
+                response = self.__checkForMovementAndMakeReplies(movement_this_time)
                 
             else:
-                
+
+                # If /getDHT was not in the request, we know it's the first time the page was rendered,
+                # so let's return the whole page, instead of just a | delimited string
                 response = calibrate_page.page()
                 
             
-            # Create a socket reply
+            # Create a socket reply, and actually send the response
             conn.send('HTTP/1.1 200 OK\n')
             conn.send('Content-Type: text/html\n')
             conn.send('Connection: close\n\n')
@@ -295,28 +306,36 @@ class SensorController:
             # Socket close()
             conn.close()
             
+            # If the button was pressed, the user wants to stop the monitoring
             if self.button.value():
                 self.polytone.duty(0)
                 self.monotone.value(0)
                 self.green.duty(0)
                 break
 
+            # The wi-fi seems to cut out sometimes, crashing the system
+            # Here we check that the Wifi is still connected, and re-connect if not
             if self.sta.isconnected() == False:
                 self.green.duty(0)
+                self.replies['packets'] = "0"
                 self.__connectToWiFiAndMakeSocketConnection()
 
+        # Here, we know the button has been pressed, or an error has occcured
         print('Problem here, or sensor has been stopped!')
         
+        # Turn on the red and yellow LEDs, and start the buzzer!
         self.green.duty(0)
         self.yellow.duty(500)
         self.red.duty(500)
    
         self.polytone.duty(999)
 
+        # Keep the buzzer and LEDs on until the button is pressed, then break
         while True:
             if self.button.value():
                 break
 
+        # As a final step, the system turns off all lights and buzzers, as a kind of cleanup operation
         self.polytone.duty(0)
         self.monotone.value(0)
         self.green.duty(0)
