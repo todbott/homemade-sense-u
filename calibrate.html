@@ -28,6 +28,7 @@
                     <div class="card" style="width: 75%;" id="monitoringCard">
                         <div class="card-body">
                         <h5 class="card-title">Monitoring in progress</h5>
+                        <span id="packetsCounter" style="font-size: smaller; color: rgb(77, 77, 77);"></span>
                         <p class="card-text" id="calibrateCardText">Monitoring is now in progress.  If movement is not detected, an alert will sound on the device, and a message will appear below.</p>
                         <p>Most recent movement was <span style="font-size: larger" id="noMovementSpan"></span> seconds ago</p>
                         <p><span style="font-size: larger; color:#ff2828;" id="warningSpan"></span></p>
@@ -95,6 +96,7 @@
             <script>
 
                 var updateInterval = 0
+                var then = ""
 
                 var ajaxRequest = new XMLHttpRequest();
 
@@ -107,23 +109,27 @@
                                     
                                             var ajaxResult = ajaxRequest.responseText;
                                             var array = ajaxResult.split("|");
+                                            console.log(array)
 
-                                            document.getElementById("AcX_data_monitoring").style.backgroundColor = array[7];
-                                            document.getElementById("AcY_data_monitoring").style.backgroundColor = array[6];
-                                            document.getElementById("AcZ_data_monitoring").style.backgroundColor = array[5];
-                                            document.getElementById("GyX_data_monitoring").style.backgroundColor = array[3];
-                                            document.getElementById("GyY_data_monitoring").style.backgroundColor = array[2];
-                                            document.getElementById("GyZ_data_monitoring").style.backgroundColor = array[1];
+                                            document.getElementById("AcX_data_monitoring").style.backgroundColor = array[5];
+                                            document.getElementById("AcY_data_monitoring").style.backgroundColor = array[4];
+                                            document.getElementById("AcZ_data_monitoring").style.backgroundColor = array[3];
+                                            document.getElementById("GyX_data_monitoring").style.backgroundColor = array[2];
+                                            document.getElementById("GyY_data_monitoring").style.backgroundColor = array[1];
+                                            document.getElementById("GyZ_data_monitoring").style.backgroundColor = array[0];
 
-                                            document.getElementById("noMovementSpan").innerHTML = array[4]
-                                            document.getElementById("warningSpan").innerHTML = array[0]
-                                            if (array[0].includes("Warning:")) {
+                                            document.getElementById("noMovementSpan").innerHTML = array[6]
+                                            document.getElementById("warningSpan").innerHTML = array[7]
+
+                                            document.getElementById("packetsCounter").innerHTML = array[8]
+
+                                            if (array[7].includes("Warning:")) {
                                                 playSound("https://storage.googleapis.com/rvm-images/first_alert.wav")
                                             }
-                                            else if (array[0].includes("Alert:")) {
+                                            else if (array[7].includes("Alert:")) {
                                                 document.getElementById("warningSpan").style.fontWeight = "900"
                                                 playSound("https://storage.googleapis.com/rvm-images/second_alert.wav")
-                                            } else if (array[0].includes("Sensor")) {
+                                            } else if (array[7].includes("Sensor")) {
                                                 document.getElementById("warningSpan").style.fontWeight = "900"
                                                 playSound("https://storage.googleapis.com/rvm-images/sensor_disconnected.wav")
                                             } else {
@@ -150,9 +156,20 @@
                     const audio = new Audio(url);
                     audio.play();
                     }
+
+                function checkSeconds() {
+                    let now = document.getElementById("packetsCounter").innerHTML
+                    if (now == then) {
+                        document.getElementById("warningSpan").style.fontWeight = "900"
+                        document.getElementById("warningSpan").innerHTML = "<h2>Sensor Disconnected</h2>"
+                        playSound("https://storage.googleapis.com/rvm-images/sensor_disconnected.wav")
+                    }
+                    then = now
+                }
                     
 
-                updateInterval = setInterval("updateDHT('getDHT')", 3000);        
+                updateInterval = setInterval("updateDHT('getDHT')", 3000);    
+                checkInterval = setInterval(checkSeconds, 9000)    
 
             </script>
         </div>
