@@ -1,3 +1,3 @@
 import Operator
 
-Operator.SensorController(3, 10, 30, 60).main()
+Operator.SensorController(3, 10, 60, 120).main()

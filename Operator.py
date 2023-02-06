@@ -100,6 +100,8 @@ class SensorController:
         while self.sta.isconnected() == False:
             time.sleep(2)
 
+        print(self.sta.ifconfig()[0])
+
         url = "https://us-central1-hotaru-kanri.cloudfunctions.net/random-led-code"
         data = {'ip': self.sta.ifconfig()[0], 'email': 'todbotts.triangles@gmail.com'}
         headers = {}
@@ -270,7 +272,21 @@ class SensorController:
                 # The page updates every 3 seconds, but I want to check for movement even more frequently than that
                 # So here, we check for movement 2 times within those 3 seconds we have
                 for t in range(0, 2):
-                    mpuv = self.mpu.get_values()
+
+                    # The mpu6050.py file occasionally returns an error temporarily,
+                    # so here we try to get the values, and if there's an error, we just fill
+                    # the mpuv dictionary with the most recent values in the readings dictionary.
+                    # If there was an error, we'll just activate the buzzer for a split second (for debugging purposes)
+                    try:
+                        mpuv = self.mpu.get_values()
+                    except:
+                        self.monotone.value(1) 
+                        mpuv = {}
+                        for k in self.readings.keys():
+                            mpuv[k] = self.readings[k][0]
+                        time.sleep(0.25)
+                        self.monotone.value(0)
+                        
                                     
                     for k in self.readings.keys():
 
