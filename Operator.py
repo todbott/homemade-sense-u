@@ -382,7 +382,6 @@ class NightSensorController:
         self.second_warning = second_warning
 
         # Here are the buzzers, LEDs and button
-        self.monotone = Pin(32, Pin.OUT)
         self.polytone = PWM(Pin(33), freq=300, duty=0)
         self.red = PWM(Pin(16), freq=5000, duty=500)
         self.yellow = PWM(Pin(18), freq=5000, duty=0)
@@ -516,23 +515,20 @@ class NightSensorController:
         if not movement_this_time:
             self.no_movement_seconds += 3
         else:
-            self.movement_log['seconds_until_movement'].append(self.no_movement_seconds)
-            print(f"moving at {self.no_movement_seconds}")
+            if self.no_movement_seconds > self.first_warning:
+                self.movement_log['seconds_until_movement'].append(self.no_movement_seconds)
             self.no_movement_seconds = 0
-            
-        #print(self.no_movement_seconds)
 
         if self.no_movement_seconds > self.second_warning:
             self.red.duty(500)
             self.polytone.duty(6)  
-            #self.monotone.value(1)     
+ 
         elif self.no_movement_seconds > self.first_warning:
             self.red.duty(250)
             self.polytone.duty(3)
         else:
             self.red.duty(0)
             self.polytone.duty(0)
-            #self.monotone.value(0)
 
     def main(self):
 
@@ -609,7 +605,6 @@ class NightSensorController:
             # If the button was pressed, the user wants to stop the monitoring
             if self.button.value():
                 self.polytone.duty(0)
-                self.monotone.value(0)
                 self.green.duty(0)
                 break
 
@@ -631,7 +626,6 @@ class NightSensorController:
             if self.button.value():
                 # As a final step, the system turns off all lights and buzzers, as a kind of cleanup operation
                 self.polytone.duty(0)
-                self.monotone.value(0)
                 self.green.duty(0)
                 self.red.duty(0)
                 self.yellow.duty(0)
