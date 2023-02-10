@@ -442,7 +442,11 @@ class NightSensorController:
 
             lists_remain = False
 
-            mpuv = self.mpu.get_values()
+            try:
+                mpuv = self.mpu.get_values()
+            except:
+                self.__initSensor()
+                pass
             self.yellow.duty(50)
             print("Calculating the error rates of each sensor")
                     
@@ -470,7 +474,11 @@ class NightSensorController:
         calibrated = False
         while not calibrated:
 
-            mpuv = self.mpu.get_values()
+            try:
+                mpuv = self.mpu.get_values()
+            except:
+                self.__initSensor()
+                pass
 
             for k in self.readings.keys():
 
@@ -494,7 +502,7 @@ class NightSensorController:
             
         for k in self.readings.keys():
             self.readings[k] = []
-            self.thresholds[k] += 100
+            self.thresholds[k] += 30
 
         with open("calibration_values.txt", "w") as v:
             ujson.dump(self.thresholds, v)
@@ -524,11 +532,25 @@ class NightSensorController:
             self.polytone.duty(6)  
  
         elif self.no_movement_seconds > self.first_warning:
-            self.red.duty(250)
+            self.red.duty(50)
             self.polytone.duty(3)
         else:
             self.red.duty(0)
             self.polytone.duty(0)
+
+
+    def __initSensor(self):
+        # Initialize the sensor
+        self.i2c = I2C(scl=Pin(22), sda=Pin(21))  
+        
+        # Make a variable to hold sensor readiings
+        self.mpu= mpu6050.accel(self.i2c)
+
+        try:
+            test = self.mpu.get_values()
+            return True
+        except:
+            self.__initSensor()
 
     def main(self):
 
@@ -582,18 +604,14 @@ class NightSensorController:
 
                     if self.__averageList(self.readings[k]) == 0:
                         
-                        # Initialize the sensor
-                        self.i2c = I2C(scl=Pin(22), sda=Pin(21))  
-                        
-                        # Make a variable to hold sensor readiings
-                        self.mpu= mpu6050.accel(self.i2c)
+                        self.__initSensor()
         
                     if math.fabs(self.readings[k][1]-self.readings[k][0]) > self.thresholds[k]:
                         movement_this_time = True
                     self.readings[k] = self.readings[k][1:]
                     
             if movement_this_time:
-               self.green.duty(100)
+               self.green.duty(20)
             time.sleep(1)
             self.green.duty(0)
 
@@ -611,13 +629,13 @@ class NightSensorController:
         # Here, we know the button has been pressed, or an error has occcured
         print('Problem here, or sensor has been stopped!')
 
-        with open("log.txt", "w") as v:
+        with open("log.txt", "a") as v:
             ujson.dump(self.movement_log, v)
         
         # Turn on the red and yellow LEDs!
         self.green.duty(0)
-        self.yellow.duty(500)
-        self.red.duty(500)
+        self.yellow.duty(50)
+        self.red.duty(50)
 
         time.sleep(3)
 
