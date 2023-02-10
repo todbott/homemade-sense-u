@@ -478,7 +478,6 @@ class NightSensorController:
                 mpuv = self.mpu.get_values()
             except:
                 self.__initSensor()
-                pass
 
             for k in self.readings.keys():
 
@@ -502,7 +501,7 @@ class NightSensorController:
             
         for k in self.readings.keys():
             self.readings[k] = []
-            self.thresholds[k] += 30
+            self.thresholds[k] += 50
 
         with open("calibration_values.txt", "w") as v:
             ujson.dump(self.thresholds, v)
@@ -547,7 +546,15 @@ class NightSensorController:
         self.mpu= mpu6050.accel(self.i2c)
 
         try:
-            test = self.mpu.get_values()
+            for x in range(0, 15):
+                mpuv = self.mpu.get_values()
+                for k in self.readings.keys():
+                    self.readings[k].append(mpuv[k])
+                time.sleep(1)
+            for k in self.readings.keys():
+                self.readings[k] = self.readings[k][-2:]
+
+            print(self.readings)
             return True
         except:
             self.__initSensor()
@@ -587,12 +594,10 @@ class NightSensorController:
             except:
                 
                 self.yellow.duty(250)
-                mpuv = {}
-                for k in self.readings.keys():
-                    mpuv[k] = self.readings[k][0]
-                time.sleep(0.25)
-                self.yellow.duty(0)
                 print("sensor momentarily disconnected")
+                self.__initSensor()
+                self.yellow.duty(0)
+                
                 
                             
             for k in self.readings.keys():
@@ -601,10 +606,6 @@ class NightSensorController:
                 
                 # If there are 2 readings, compare the difference in those readings against the threshold value for that sensor
                 if len(self.readings[k]) == 3:
-
-                    if self.__averageList(self.readings[k]) == 0:
-                        
-                        self.__initSensor()
         
                     if math.fabs(self.readings[k][1]-self.readings[k][0]) > self.thresholds[k]:
                         movement_this_time = True
