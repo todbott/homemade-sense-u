@@ -446,7 +446,7 @@ class NightSensorController:
                 mpuv = self.mpu.get_values()
             except:
                 self.__initSensor()
-                pass
+              
             self.yellow.duty(50)
             print("Calculating the error rates of each sensor")
                     
@@ -478,7 +478,7 @@ class NightSensorController:
                 mpuv = self.mpu.get_values()
             except:
                 self.__initSensor()
-
+              
             for k in self.readings.keys():
 
                 self.yellow.duty(500)
@@ -501,7 +501,7 @@ class NightSensorController:
             
         for k in self.readings.keys():
             self.readings[k] = []
-            self.thresholds[k] += 50
+            self.thresholds[k] += 30
 
         with open("calibration_values.txt", "w") as v:
             ujson.dump(self.thresholds, v)
@@ -557,6 +557,7 @@ class NightSensorController:
             print(self.readings)
             return True
         except:
+            time.sleep(1)
             self.__initSensor()
 
     def main(self):
