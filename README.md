@@ -8,6 +8,6 @@
 
  This is the code here in the repo, and (unfortunately), this is the actual very complex wiring of the ESP32 to go with the code:
 
- ![Alt text](/topview.jpeg?raw=true "The Wiring")
+ ![](/topview.jpeg?raw=true)
 
  I hope you can take what you need from this repo, thanks!
