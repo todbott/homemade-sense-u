@@ -8,6 +8,6 @@
 
  This is the code here in the repo, and (unfortunately), this is the actual very complex wiring of the ESP32 to go with the code:
 
- ![](topview.jpeg?raw=true)
+ ![](top-view.jpeg?raw=true)
  
  I hope you can take what you need from this repo, thanks!
