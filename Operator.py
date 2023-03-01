@@ -226,11 +226,11 @@ class SensorController:
 
         if self.no_movement_seconds > self.second_warning:
             self.red.duty(500)
-            self.polytone.duty(6)  
+            self.polytone.duty(200)  
  
         elif self.no_movement_seconds > self.first_warning:
             self.red.duty(50)
-            self.polytone.duty(3)
+            self.polytone.duty(100)
         else:
             self.red.duty(0)
             self.polytone.duty(0)
@@ -243,10 +243,10 @@ class SensorController:
 
         if self.no_movement_seconds > self.second_warning:
             self.replies['warning'] = f"Alert: No movement detected for more than {self.second_warning} seconds"
-            self.polytone.duty(999)    
+            self.polytone.duty(200)    
         elif self.no_movement_seconds > self.first_warning:
             self.replies['warning'] = f"Warning: No movement detected for more than {self.first_warning} seconds"
-            self.polytone.duty(999)
+            self.polytone.duty(100)
         else:
             self.replies['warning'] = ''
             self.polytone.duty(0)
@@ -282,7 +282,7 @@ class SensorController:
 
     def main(self):
 
-        self.polytone.duty(6)
+        self.polytone.duty(100)
         time.sleep(.5)
         self.polytone.duty(0)
 
