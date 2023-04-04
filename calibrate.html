@@ -109,7 +109,7 @@
                                     
                                             var ajaxResult = ajaxRequest.responseText;
                                             var array = ajaxResult.split("|");
-                                            console.log(array)
+                                      
 
                                             document.getElementById("AcX_data_monitoring").style.backgroundColor = array[5];
                                             document.getElementById("AcY_data_monitoring").style.backgroundColor = array[4];
@@ -159,17 +159,19 @@
 
                 function checkSeconds() {
                     let now = document.getElementById("packetsCounter").innerHTML
+                    console.log("Seconds are at " + now)
                     if (now == then) {
                         document.getElementById("warningSpan").style.fontWeight = "900"
                         document.getElementById("warningSpan").innerHTML = "<h2>Sensor Disconnected</h2>"
                         playSound("https://storage.googleapis.com/rvm-images/sensor_disconnected.wav")
+                        console.log("Seconds are STILL at " + now)
                     }
                     then = now
                 }
                     
 
                 updateInterval = setInterval("updateDHT('getDHT')", 3000);    
-                checkInterval = setInterval(checkSeconds, 9000)    
+                checkInterval = setInterval(checkSeconds, 30000)    
 
             </script>
         </div>

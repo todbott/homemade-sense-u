@@ -175,7 +175,10 @@ class SensorController:
             try:
                 mpuv = self.mpu.get_values()
             except:
+                self.yellow.duty(250)
+                print("sensor momentarily disconnected")
                 self.__initSensor()
+                self.yellow.duty(0)
               
             for k in self.readings.keys():
 
@@ -199,7 +202,7 @@ class SensorController:
             
         for k in self.readings.keys():
             self.readings[k] = []
-            self.thresholds[k] += 30
+            self.thresholds[k] += 50
 
         with open("calibration_values.txt", "w") as v:
             ujson.dump(self.thresholds, v)
@@ -266,7 +269,7 @@ class SensorController:
         self.mpu= mpu6050.accel(self.i2c)
 
         try:
-            for x in range(0, 15):
+            for x in range(0, 5):
                 mpuv = self.mpu.get_values()
                 for k in self.readings.keys():
                     self.readings[k].append(mpuv[k])
@@ -278,7 +281,7 @@ class SensorController:
             return True
         except:
             time.sleep(1)
-            self.__initSensor()
+            #self.__initSensor()
 
     def main(self):
 
@@ -397,36 +400,32 @@ class SensorController:
 
                 movement_this_time = False
                 
-                # The page updates every 3 seconds, but I want to check for movement even more frequently than that
-                # So here, we check for movement 2 times within those 3 seconds we have
-                for t in range(0, 2):
+                for t in range(0, 3):
 
-                    # The mpu6050.py file occasionally returns an error temporarily,
-                    # so here we try to get the values, and if there's an error, we just fill
-                    # the mpuv dictionary with the most recent values in the readings dictionary.
-                    # If there was an error, we'll just activate the buzzer for a split second (for debugging purposes)
                     try:
                         mpuv = self.mpu.get_values()
                     except:
-                        mpuv = {}
-                        for k in self.readings.keys():
-                            mpuv[k] = self.readings[k][0]
-                        time.sleep(0.25)
+                        
+                        self.yellow.duty(250)
+                        print("sensor momentarily disconnected")
+                        self.__initSensor()
+                        self.yellow.duty(0)
+
                         
                     for k in self.readings.keys():
 
                         self.readings[k].append(mpuv[k])
                         
-                        # If there are 2 readings, compare the difference in thos readings against the threshold value for that sensor
-                        if len(self.readings[k]) == 2:
+                        # If there are 2 readings, compare the difference in those readings against the threshold value for that sensor
+                        if len(self.readings[k]) == 3:
                 
                             if math.fabs(self.readings[k][1]-self.readings[k][0]) > self.thresholds[k]:
                                 self.replies[k] = "#00ff22" # green
                                 movement_this_time = True
                             else:
                                 self.replies[k] = "#ff2828" # red
-                            self.readings[k].clear()
-                    time.sleep(1)
+                            self.readings[k] = self.readings[k][1:]
+                    time.sleep(0.75)
 
                 # Make a | delimited response to send to the frontend
                 response = self.__checkForMovementAndMakeReplies(movement_this_time)

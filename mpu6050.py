@@ -1,4 +1,5 @@
 import machine
+import time
 
 
 class accel():
@@ -6,6 +7,7 @@ class accel():
         self.iic = i2c
         self.addr = addr
         self.iic.start()
+        time.sleep(1)
         self.iic.writeto(self.addr, bytearray([107, 0]))
         self.iic.stop()
         self.vals = {}
