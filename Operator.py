@@ -262,26 +262,31 @@ class SensorController:
 
 
     def __initSensor(self):
-        # Initialize the sensor
-        self.i2c = I2C(scl=Pin(22), sda=Pin(21))  
-        
-        # Make a variable to hold sensor readiings
-        self.mpu= mpu6050.accel(self.i2c)
 
-        try:
-            for x in range(0, 5):
-                mpuv = self.mpu.get_values()
+        good = False
+        while good == False:
+            try:
+
+                # Initialize the sensor
+                self.i2c = I2C(scl=Pin(22), sda=Pin(21))  
+                
+                # Make a variable to hold sensor readiings
+                self.mpu= mpu6050.accel(self.i2c)
+
+                for x in range(0, 5):
+                    mpuv = self.mpu.get_values()
+                    for k in self.readings.keys():
+                        self.readings[k].append(mpuv[k])
+                    time.sleep(1)
                 for k in self.readings.keys():
-                    self.readings[k].append(mpuv[k])
-                time.sleep(1)
-            for k in self.readings.keys():
-                self.readings[k] = self.readings[k][-2:]
+                    self.readings[k] = self.readings[k][-2:]
 
-            print(self.readings)
-            return True
-        except:
-            time.sleep(1)
-            #self.__initSensor()
+                print(self.readings)
+                good = True
+                
+            except:
+                time.sleep(1)
+        return True
 
     def main(self):
 
@@ -410,7 +415,8 @@ class SensorController:
                         print("sensor momentarily disconnected")
                         self.__initSensor()
                         self.yellow.duty(0)
-
+                        print("fixed!")
+                
                         
                     for k in self.readings.keys():
 
