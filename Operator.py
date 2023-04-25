@@ -116,6 +116,7 @@ class SensorController:
         time.sleep(1)
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.bind(('',80)) # specifies that the socket is reachable by any address the machine has available
         self.s.listen(5)     # max of 5 socket connections
 
@@ -416,6 +417,12 @@ class SensorController:
                         self.__initSensor()
                         self.yellow.duty(0)
                         print("fixed!")
+                        time.sleep(2)
+                        self.s.close()
+                        time.sleep(2)
+                        self.sta.active(False)
+
+                        self.__monitor_via_wifi()
                 
                         
                     for k in self.readings.keys():
@@ -464,6 +471,7 @@ class SensorController:
                 self.green.duty(0)
                 self.replies['packets'] = "0"
                 self.__connectToWiFiAndMakeSocketConnection()
+
         return None
 
 
