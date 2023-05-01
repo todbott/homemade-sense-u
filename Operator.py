@@ -32,11 +32,11 @@ class SensorController:
         self.second_warning = second_warning
 
         # Here are the buzzers, LEDs and button
-        self.polytone = PWM(Pin(33), freq=300, duty=0)
-        self.red = PWM(Pin(16), freq=5000, duty=500)
-        self.yellow = PWM(Pin(18), freq=5000, duty=0)
-        self.green = PWM(Pin(19), freq=5000, duty=0)
-        self.button = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
+        # self.polytone = PWM(Pin(33), freq=300, duty=0)
+        # self.red = PWM(Pin(16), freq=5000, duty=500)
+        # self.yellow = PWM(Pin(18), freq=5000, duty=0)
+        # self.green = PWM(Pin(19), freq=5000, duty=0)
+        # self.button = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
 
         # Here are dictionaries to hold the readings and stuff
         self.no_movement_seconds = 0
@@ -121,9 +121,9 @@ class SensorController:
         self.s.listen(5)     # max of 5 socket connections
 
         # Everything is go, so spin up the green LED
-        for duty_cycle in range(0, 500):
-            self.green.duty(duty_cycle)
-            time.sleep(0.005)
+        # for duty_cycle in range(0, 500):
+        #     self.green.duty(duty_cycle)
+        #     time.sleep(0.005)
 
 
     def __averageList(self, listToAverage):
@@ -146,7 +146,7 @@ class SensorController:
             except:
                 self.__initSensor()
               
-            self.yellow.duty(50)
+            #self.yellow.duty(50)
             print("Calculating the error rates of each sensor")
                     
             for k in self.readings.keys():
@@ -160,7 +160,7 @@ class SensorController:
                     self.readings[k].append(mpuv[k])
 
             time.sleep(0.05)
-            self.yellow.duty(0)
+            # self.yellow.duty(0)
             time.sleep(0.05)
 
             if not lists_remain:
@@ -176,14 +176,14 @@ class SensorController:
             try:
                 mpuv = self.mpu.get_values()
             except:
-                self.yellow.duty(250)
+                #self.yellow.duty(250)
                 print("sensor momentarily disconnected")
                 self.__initSensor()
-                self.yellow.duty(0)
+                #self.yellow.duty(0)
               
             for k in self.readings.keys():
 
-                self.yellow.duty(500)
+                #self.yellow.duty(500)
                 self.readings[k] = mpuv[k]
                 
                 if math.fabs(self.readings[k]-self.finalReadings[k]) > self.thresholds[k]:
@@ -198,7 +198,7 @@ class SensorController:
                 print(f'{seconds_without_error} seconds with no error')
             if seconds_without_error > self.minutes * 60:
                 calibrated = True
-            self.yellow.duty(0)
+            #self.yellow.duty(0)
             time.sleep(1)
             
         for k in self.readings.keys():
@@ -216,9 +216,9 @@ class SensorController:
                 v.write('')
                 v.close()
                 for x in range(500, 0, -50):
-                    self.green.duty(x)
+                    #self.green.duty(x)
                     time.sleep(0.25)
-            self.green.duty(0)
+            #self.green.duty(0)
 
     def __checkForMovementAndMakeSounds(self, movement_this_time):
         if not movement_this_time:
@@ -228,16 +228,16 @@ class SensorController:
                 self.movement_log['seconds_until_movement'].append(self.no_movement_seconds)
             self.no_movement_seconds = 0
 
-        if self.no_movement_seconds > self.second_warning:
-            self.red.duty(500)
-            self.polytone.duty(200)  
+        # if self.no_movement_seconds > self.second_warning:
+        #     self.red.duty(500)
+        #     self.polytone.duty(200)  
  
-        elif self.no_movement_seconds > self.first_warning:
-            self.red.duty(50)
-            self.polytone.duty(100)
-        else:
-            self.red.duty(0)
-            self.polytone.duty(0)
+        # elif self.no_movement_seconds > self.first_warning:
+        #     self.red.duty(50)
+        #     self.polytone.duty(100)
+        # else:
+        #     self.red.duty(0)
+        #     self.polytone.duty(0)
 
     def __checkForMovementAndMakeReplies(self, movement_this_time):
         if not movement_this_time:
@@ -247,13 +247,13 @@ class SensorController:
 
         if self.no_movement_seconds > self.second_warning:
             self.replies['warning'] = f"Alert: No movement detected for more than {self.second_warning} seconds"
-            self.polytone.duty(200)    
+            #self.polytone.duty(200)    
         elif self.no_movement_seconds > self.first_warning:
             self.replies['warning'] = f"Warning: No movement detected for more than {self.first_warning} seconds"
-            self.polytone.duty(100)
+            #self.polytone.duty(100)
         else:
             self.replies['warning'] = ''
-            self.polytone.duty(0)
+            #self.polytone.duty(0)
 
         self.replies['no_movement_seconds'] = str(self.no_movement_seconds)
 
@@ -291,18 +291,19 @@ class SensorController:
 
     def main(self):
 
-        self.polytone.duty(100)
+        #self.polytone.duty(100)
         time.sleep(.5)
-        self.polytone.duty(0)
+        #self.polytone.duty(0)
 
-        self.yellow.duty(0)
-        self.red.duty(0)
+        #self.yellow.duty(0)
+        #self.red.duty(0)
 
         # Check if the button is pressed.  If so, erase the contents of calibration_values.txt
-        self.__recalibrateOnStartupMaybe()
+        #self.__recalibrateOnStartupMaybe()
 
         # If calibration_values.txt is empty, re-calibrate the sensors
         vals = open("calibration_values.txt", "r").read()
+        print(vals)
         if len(vals) == 0:
             self.__calculateSensorError()
             self.__calibrateSensor()
@@ -318,26 +319,26 @@ class SensorController:
         # Here, we know the button has been pressed, or an error has occcured
         print('Problem here, or sensor has been stopped!')
 
-        with open("log.txt", "a") as v:
-            ujson.dump(self.movement_log, v)
+        # with open("log.txt", "a") as v:
+        #     ujson.dump(self.movement_log, v)
         
-        # Turn on the red and yellow LEDs!
-        self.green.duty(0)
-        self.yellow.duty(50)
-        self.red.duty(50)
+        # # Turn on the red and yellow LEDs!
+        # # self.green.duty(0)
+        # # self.yellow.duty(50)
+        # # self.red.duty(50)
 
-        time.sleep(3)
+        # time.sleep(3)
 
-        # Keep the buzzer and LEDs on until the button is pressed, then break
-        while True:
-            if self.button.value():
-                # As a final step, the system turns off all lights and buzzers, as a kind of cleanup operation
-                self.polytone.duty(0)
-                self.green.duty(0)
-                self.red.duty(0)
-                self.yellow.duty(0)
+        # # Keep the buzzer and LEDs on until the button is pressed, then break
+        # while True:
+        #     if self.button.value():
+        #         # As a final step, the system turns off all lights and buzzers, as a kind of cleanup operation
+        #         self.polytone.duty(0)
+        #         self.green.duty(0)
+        #         self.red.duty(0)
+        #         self.yellow.duty(0)
 
-                break
+        #         break
 
 
     def __monitor_in_room(self):
@@ -412,10 +413,10 @@ class SensorController:
                         mpuv = self.mpu.get_values()
                     except:
                         
-                        self.yellow.duty(250)
+                        #self.yellow.duty(250)
                         print("sensor momentarily disconnected")
                         self.__initSensor()
-                        self.yellow.duty(0)
+                        #self.yellow.duty(0)
                         print("fixed!")
                         time.sleep(2)
                         self.s.close()
@@ -460,15 +461,15 @@ class SensorController:
             conn.close()
             
             # If the button was pressed, the user wants to stop the monitoring
-            if self.button.value():
-                self.polytone.duty(0)
-                self.green.duty(0)
-                break
+            # if self.button.value():
+            #     self.polytone.duty(0)
+            #     self.green.duty(0)
+            #     break
 
             # The wi-fi seems to cut out sometimes, crashing the system
             # Here we check that the Wifi is still connected, and re-connect if not
             if self.sta.isconnected() == False:
-                self.green.duty(0)
+                #self.green.duty(0)
                 self.replies['packets'] = "0"
                 self.__connectToWiFiAndMakeSocketConnection()
 
